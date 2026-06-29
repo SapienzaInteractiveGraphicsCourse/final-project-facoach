@@ -1,0 +1,195 @@
+/* Rimuove i margini predefiniti del browser */
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Nasconde le barre di scorrimento */
+    background-color: #000; /* Colore di sfondo se il gioco non copre tutto */
+}
+
+/* Gestisce il canvas di Three.js */
+canvas {
+    display: block; /* Evita lo spazio bianco sotto il canvas */
+    width: 100vw;
+    height: 100vh;
+}
+
+#game-container {
+    width: 100%;
+    height: 100%;
+}
+
+/* Stile per la legenda dei comandi in basso a sinistra */
+#controls-legend {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid #44aaff;
+    color: #ffffff;
+    font-family: 'Courier New', Courier, monospace; 
+    padding: 15px;
+    border-radius: 8px;
+    pointer-events: none; /* Impedisce al mouse di incastrarsi */
+    user-select: none;
+    box-shadow: 0 0 10px rgba(68, 170, 255, 0.3);
+}
+
+#controls-legend span {
+    color: #44aaff;
+    font-weight: bold;
+}
+
+/* Stile per il prompt di interazione al centro dello schermo */
+#interaction-prompt {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px); /* Per compatibilità con alcuni browser */
+    opacity: 0.85;
+    color: #ffffff;
+    font-family: 'Courier New', Courier, monospace;
+    padding: 10px 20px;
+    border: 1px solid rgba(255, 170, 0, 0.5);
+    border-radius: 5px;
+    font-size: 18px;
+    pointer-events: none;
+    user-select: none;
+    display: none; /* Nascosto di default all'avvio */
+    box-shadow: 0 0 10px rgba(255, 170, 0, 0.2);
+}
+
+
+#console-ui {
+    display: none; /* Nascosto di default */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 450px;
+    background: rgba(5, 20, 35, 0.95);
+    border: 2px solid #00aaff;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 170, 255, 0.6);
+    color: #e0f5ff;
+    font-family: 'Courier New', monospace;
+    padding: 25px;
+    z-index: 1000;
+    box-sizing: border-box;
+}
+
+.console-header {
+    font-size: 20px; font-weight: bold; border-bottom: 2px solid #00aaff; 
+    padding-bottom: 10px; margin-bottom: 20px; color: #00ffff; 
+    text-align: center; text-transform: uppercase; letter-spacing: 2px;
+}
+
+.console-text { font-size: 14px; line-height: 1.6; text-align: left; margin-bottom: 25px; }
+.alert-text { color: #ff3333; font-weight: bold; }
+.directive-text { color: #33ff33; }
+.highlight-text { color: #ffff00; font-weight: bold; }
+
+.console-footer {
+    font-size: 12px; color: #88ccff; border-top: 1px solid rgba(0,170,255,0.3); 
+    padding-top: 12px; text-align: center; animation: pulse 1.5s infinite;
+}
+
+.key-btn { background: #0055aa; color: #fff; padding: 2px 6px; border-radius: 3px; }
+
+.log-meta {
+    display: block;
+    color: #55bbee; /* Un azzurro/grigio più spento e informatico */
+    border-left: 3px solid #ff3333; /* Una linea rossa verticale di pericolo a sinistra */
+    padding-left: 10px;
+    font-size: 13px;
+    background: rgba(255, 51, 51, 0.05); /* Un leggerissimo sfondo rosso sui dati */
+    margin-bottom: 15px;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+/* --- SCHERMATA DI VITTORIA (HUD FUTURISTICO) --- */
+#victory-screen {
+    display: none; /* Nascosta di default */
+    position: absolute;
+    top: 20%; /* Posizionata in alto come richiesto */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    pointer-events: none; /* Impedisce che blocchi eventuali click mouse */
+    z-index: 2000; /* Deve stare sopra a tutto, anche alla UI della console */
+    
+    /* Animazione di glitch/accensione olografica quando appare */
+    animation: holo-power-on 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.victory-title {
+    color: #00ffcc; /* Ciano fluo/hacker */
+    font-size: 54px;
+    font-weight: bold;
+    margin: 0;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    /* Effetto ologramma luminoso */
+    text-shadow: 
+        0 0 10px rgba(0, 255, 204, 0.8),
+        0 0 20px rgba(0, 255, 204, 0.5),
+        0 0 40px rgba(0, 153, 255, 0.5);
+}
+
+.victory-subtitle {
+    color: #e0f5ff;
+    font-size: 18px;
+    letter-spacing: 3px;
+    margin-top: 10px;
+    background-color: rgba(0, 30, 50, 0.7); /* Sfondino semi-trasparente */
+    padding: 8px 15px;
+    border-left: 4px solid #00ffcc;
+    border-right: 4px solid #00ffcc;
+    display: inline-block;
+    box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+}
+
+/* Animazione di accensione (Flicker stile tubo catodico/ologramma) */
+@keyframes holo-power-on {
+    0%   { opacity: 0; transform: translate(-50%, -45%) scale(0.9); filter: blur(5px); }
+    30%  { opacity: 0.8; }
+    40%  { opacity: 0.2; }
+    50%  { opacity: 1; filter: blur(0px); }
+    60%  { opacity: 0.5; }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0px); }
+}
+
+#loading-screen {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: #020205; /* Stesso colore del tuo background */
+    z-index: 9999; /* Sopra a tutto, anche alla UI del gioco */
+    display: flex; justify-content: center; align-items: center;
+    color: #ff5500; /* Arancione stile generatore */
+    font-family: 'Courier New', Courier, monospace;
+    transition: opacity 0.8s ease; /* Effetto dissolvenza alla fine */
+}
+
+/* Effetto dissolvenza per nasconderlo */
+.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loader-content { text-align: center; }
+.progress-bar-container {
+    width: 300px; height: 10px; background: #111;
+    border: 1px solid #ff5500; border-radius: 5px; margin: 20px auto; overflow: hidden;
+}
+#progress-bar {
+    width: 0%; height: 100%; background: #ff5500;
+    transition: width 0.1s ease;
+}

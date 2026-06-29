@@ -1,0 +1,11 @@
+# Ignore dependency folders (VERY IMPORTANT)
+node_modules/
+.npm/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Optional: If your 3D models/textures are massive and you don't want them on GitHub
+# Environment/models/
+# assets/textures/

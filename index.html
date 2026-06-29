@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platformer - IG Project</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container"></div>
+
+    <div id="loading-screen">
+    <div class="loader-content">
+        <h2>LOADING ROBOT SYSTEM...</h2>
+        <div class="progress-bar-container">
+            <div id="progress-bar"></div>
+        </div>
+        <p id="loading-text">Initialization in progress...</p>
+    </div>
+    </div>
+
+    <div id="controls-legend">
+        <div style="margin-bottom: 10px; border-bottom: 1px solid #44aaff; padding-bottom: 5px;"><b>CONTROL SYSTEM</b></div>
+        <span>[ W A S D ]</span> Movement<br>
+        <span>[ Shift ]</span> Sprint<br>
+        <span>[ Space ]</span> Jump<br>
+        <span>[ E ]</span> Flashlight<br>
+        <span>[ F ]</span> Interact<br>
+        <span>[ Mouse ]</span> View
+    </div>
+
+    <div id="interaction-prompt">
+        Press <b>[ F ]</b> to interact
+    </div>
+
+    <div id="console-ui">
+      <div class="console-header">EMERGENCY LOG // CENTRAL CORE</div>
+    
+      <p class="console-text">
+          <span class="log-meta">DATE: 14.08.2184 | TIME: 03:14:02<br>
+          REGISTER: #ERR-994-OMEGA<br>
+          SHIP INTEGRITY STATUS: CRITICAL (34%)</span><br><br>
+
+          <span class="alert-text">[EVENT]:</span> The unexpected proximity to the event horizon of the gravitational singularity caused severe structural failures to the lower decks.<br><br>
+
+          <span class="alert-text">[ANOMALY]:</span> The primary reactor was ejected by the safety systems to prevent the core from exploding. The module is currently located in the external sector.<br><br>
+
+          <span class="directive-text">[PROTOCOL ACTIVATED]:</span> Emergency protocol initialization. Awaken the android unit for component recovery.<br><br>
+
+          <span class="directive-text">[TECHNICAL UNIT NOTE]:</span> The main hatch is sealed. To force it open to allow the reactor to be retrieved, the unit must overload the <span class="highlight-text">two photo-sensitive crystals at the same time</span> by directing a beam of light onto them.<br><br>
+
+          <span class="alert-text">[WARNING]:</span> The material found outside in this solar system is unkown and it reacts in a volatile way to light.
+      </p>
+
+      <div class="console-footer">
+          Press <b class="key-btn">F</b> to disconnect from the terminal
+      </div>
+    </div>
+
+    <div id="victory-screen">
+        <h1 class="victory-title">MISSION ACCOMPLISHED</h1>
+        <p class="victory-subtitle">REACTOR SECURED. EVACUATION PROTOCOL INITIATED.</p>
+    </div>
+    
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.150.0/build/three.module.js",
+        "three/examples/jsm/loaders/GLTFLoader.js": "https://unpkg.com/three@0.150.0/examples/jsm/loaders/GLTFLoader.js",
+        "@tweenjs/tween.js": "https://unpkg.com/@tweenjs/tween.js@18.6.4/dist/tween.esm.js"
+      }
+    }
+  </script>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
