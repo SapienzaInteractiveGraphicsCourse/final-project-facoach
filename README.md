@@ -50,7 +50,7 @@ The codebase is modularly organized following a clean architecture to separate c
         ├── interactive_animations.js      # Light intensity triggers, sensor logic, and puzzle state checks
         ├── physics_animations.js          # collision detection and gravity calculations
         └── UI_animations.js               # HUD updates, game menus and victory overlays
-
+```
 
 ## 🕹️ Gameplay & Mechanics
 
