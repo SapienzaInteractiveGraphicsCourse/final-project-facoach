@@ -24,7 +24,7 @@ export function createWorld() {
     const wallTex = State.textureLoader.load('./textures/wall_texture.jpg');
     const doorTex = State.textureLoader.load('./textures/door.png');
     const platformTex = State.textureLoader.load('./textures/debris.png');
-    const metalTex = State.textureLoader.load('./textures/Metal046B_1k-JPG_Color.jpg');
+    const metalTex = State.textureLoader.load('./textures/Metal046B_1K-JPG_Color.jpg');
     metalTex.wrapS = THREE.RepeatWrapping;
     metalTex.wrapT = THREE.RepeatWrapping;
     platformTex.wrapS = THREE.RepeatWrapping;
