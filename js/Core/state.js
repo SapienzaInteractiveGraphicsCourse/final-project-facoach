@@ -149,6 +149,7 @@ export const State = {
   // Costanti fisiche
   gravity: -0.01,
   jumpForce: 0.26,
+  clock: new THREE.Clock(),
 
   // Array animati (riempiti con .push(), iterati nel loop)
   activePipes: [],        // Texture dei tubi da scorrere

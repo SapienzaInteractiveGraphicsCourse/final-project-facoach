@@ -24,7 +24,10 @@ export function animate() {
     TWEEN.update();
 
     // 2. MOVIMENTO
-    updateMovement();
+    const deltaTime = State.clock.getDelta();
+
+    // Passa il deltaTime alla tua funzione di movimento
+    updateMovement(deltaTime);
 
     checkCollisions(oldPos);
 

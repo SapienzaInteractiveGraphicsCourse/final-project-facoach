@@ -7,10 +7,12 @@ import {State} from '../Core/state.js';
 
 import {getIntensityOnObject} from '../Core/utils.js';
 
-export function updateMovement(){
+export function updateMovement(deltaTime){
     // 2. MOVIMENTO
     if (!State.isConsoleScreenOpen) {
-        const currentSpeed = State.keys.shift ? 0.25 : 0.12;
+        // Moltiplichiamo i vecchi valori per 60 per convertirli in m/s
+        const baseSpeed = State.keys.shift ? 15.0 : 7.2; 
+        const currentSpeed = baseSpeed * deltaTime; // <-- 2. Moltiplicato per deltaTime!
         if (State.keys.w) State.player.translateZ(-currentSpeed);
         if (State.keys.s) State.player.translateZ(currentSpeed);
         if (State.keys.a) State.player.translateX(-currentSpeed);
