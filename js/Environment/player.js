@@ -2,32 +2,31 @@ import * as THREE from 'three';
 import * as TWEEN from '@tweenjs/tween.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
-// --- CONFIGURAZIONE GLOBALE ---
+// global variables
 import {State} from '../Core/state.js';
 
 export function createPlayer(){
-    // --- PLAYER (Posizionato sopra il nuovo pavimento) ---
+    // create the player group and add it to the scene
         State.player = new THREE.Group();
         State.player.position.set(0, 2, 5); 
         State.scene.add(State.player);
 
         const loader = new GLTFLoader(State.loadingManager);
-        // Caricamento Modello 3D
+        // load 3d model
         loader.load('./models/small_robot_corrected2.glb', (gltf) => {
             const model = gltf.scene;
         
-            // Configurazione Modello
             model.scale.set(1, 1, 1); 
         
-            // Posizioniamo i piedi del modello alla base del gruppo (y=0 del gruppo)
+            //add the model at the base of the group
             model.position.y = 0.7; 
     
-            // Rendiamo il modello capace di proiettare ombre
+            // add shadows to the group
             model.traverse((node) => {
                 if (node.isMesh) {
                     node.castShadow = true;
                     node.receiveShadow = true;
-                    // Rende le superfici lisce eliminando l'effetto "a quadratini"
+                    // avoids bug for lighting that is not smooth on the model surface
                     node.geometry.computeVertexNormals();
     
                     if (node.name.includes("arm_l")) {
@@ -54,7 +53,7 @@ export function createPlayer(){
         State.scene.add(State.camera);
         State.camera.position.set(0, 2, 5);
     
-        // ... Torcia e Glow rimangono invariati ...
+        // add player torch and glow
         State.playerLamp = new THREE.SpotLight(0xffffff, 0, 30, Math.PI / 4, 0.3, 2);
         State.playerLamp.position.set(0, 0.5, -0.5);
         State.playerLamp.castShadow = true;

@@ -2,16 +2,16 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as TWEEN from '@tweenjs/tween.js';
 
-// --- CONFIGURAZIONE GLOBALE ---
+// global variables
 import {State} from '../Core/state.js';
 
 import {getIntensityOnObject} from '../Core/utils.js';
 import {openSciFiDoor, closeSciFiDoor} from './door_animations.js';
 
-// --- AGGIORNAMENTO STATI ---
+// update sensor if they are hit by light
 export function updateSensors() {
-    //oscillazione sensori
-    const currenttime = Date.now() * 0.001; // Tempo in secondi
+    // basic oscillation
+    const currenttime = Date.now() * 0.001; 
     if (State.crystal1) State.crystal1.position.y = 2 + Math.sin(currenttime) * 17;
     if (State.crystal2) State.crystal2.position.y = 2 + Math.sin(currenttime) * 17;
 
@@ -19,7 +19,7 @@ export function updateSensors() {
         const crystal = sensor.getObjectByName("Crystal");
         if (!crystal) return;
 
-        // PASSIAMO IL CRYSTAL, NON IL SENSOR
+        // check if crystal (only the crystal mesh, not the base) is hit by light
         const i1 = State.isLampOn ? getIntensityOnObject(State.playerLamp, crystal) : 0;
         const i2 = State.isLightOn ? getIntensityOnObject(State.interactLight, crystal) : 0;
         
@@ -28,33 +28,38 @@ export function updateSensors() {
         } else {
             sensor.userData.activated = false;
         }
-
+        
+        //if sensor is activated by light, make it rotate
         if (sensor.userData.activated) {
             crystal.rotation.y += 0.04;
         }
     });
+    //if both of them are, open door
     if (State.sensors[0].userData.activated === true && State.sensors[1].userData.activated === true && !State.isDoorOpen) {
         openSciFiDoor();
     }
 }
 
+//check if platforms should appear/disappear
 export function updateSpecialPlatforms() {
 
     State.platforms.forEach(plat => {
-        //oscillazione piattaforme
-        const currenttime = Date.now() * 0.001; // Tempo in secondi
+        //standard wobble
+        const currenttime = Date.now() * 0.001; 
         if (plat && plat.userData.wobble) {
-            plat.position.y += Math.sin(currenttime + plat.userData.id) * 0.005; // Oscillazione verticale leggera
+            plat.position.y += Math.sin(currenttime + plat.userData.id) * 0.005; 
         }
 
-        //piattaforme speciali on o off in base alla luce
+        //normal platforms don't react to light
         if (plat.userData.type === 'normal') return;
 
+        //get light intensity
         const i1 = State.isLampOn ? getIntensityOnObject(State.playerLamp, plat) : 0;
         const i2 = State.isLightOn ? getIntensityOnObject(State.interactLight, plat) : 0;
         const i3 = State.isLampOn ? getIntensityOnObject(State.playerGlow, plat) : 0;
         const isHitByLight = (i1 + i2 + i3) > 0.07;
 
+        //apppear or disappear if they should (correct type and hit by light)
         if (plat.userData.type === 'shadow') {
             plat.visible = !isHitByLight;
             plat.userData.active = !isHitByLight;

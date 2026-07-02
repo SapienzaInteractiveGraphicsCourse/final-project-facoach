@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
-// --- CONFIGURAZIONE GLOBALE ---
+// global variables
 import {State} from './state.js';
 
-// --- LOGICA DI ILLUMINAZIONE FISICA ---
+// logic for illumination: gets how much intensity is hitting an object from a light source, considering distance, angle and occlusion
 export function getIntensityOnObject(lightSource, targetObj) {
     const lightPos = new THREE.Vector3();
     lightSource.getWorldPosition(lightPos);
@@ -11,10 +11,11 @@ export function getIntensityOnObject(lightSource, targetObj) {
     targetObj.getWorldPosition(targetPos);
 
     const dist = lightPos.distanceTo(targetPos);
-    if (dist > 20) return 0; // Ottimizzazione: se troppo lontano, scarta subito
+    if (dist > 20) return 0; // if the object is too far, we don't even calculate the intensity
 
     let intensity = lightSource.intensity / (dist * dist);
 
+    //if the light source is the torch, we need to check if the player is facing the object, and if the object is in the cone of light
     if (lightSource.isSpotLight) {
         const lampDir = new THREE.Vector3(0, 0, -1).applyQuaternion(State.player.quaternion);
         const dirToTarget = new THREE.Vector3().subVectors(targetPos, lightPos).normalize();
@@ -29,20 +30,19 @@ export function getIntensityOnObject(lightSource, targetObj) {
         intensity *= penumbraMod;
     }
 
+    //use raycaster to check colllision
     const rayDir = new THREE.Vector3().subVectors(targetPos, lightPos).normalize();
     const raycaster = new THREE.Raycaster(lightPos, rayDir, 0, dist + 0.5);
     
-    // --- IL TRUCCO CHE RISOLVE IL LAG ---
-    // Creiamo un array contenente SOLO gli oggetti solidi (muri, pavimenti e il cristallo stesso)
-    // Il raycaster ora controllerà 20 oggetti invece di 30.000!
+    // to solve lag, we use an array that contains only the solid obstacles (walls and platforms) to check rays
     const ostacoliSolidi = [...State.walls, ...State.platforms, targetObj];
     
-    // Usiamo il nuovo array "ostacoliSolidi" invece del vecchio "scene.children"
+    // we use that array to check intersections
     const intersects = raycaster.intersectObjects(ostacoliSolidi, true);
 
     if (intersects.length > 0 && intersects[0].object !== targetObj && intersects[0].object.parent !== targetObj) {
-        return 0; // La luce è bloccata da un muro o una piattaforma
+        return 0; // in this case light is blocked by an obstacle, so we return 0
     }
 
-    return intensity; // La luce colpisce l'oggetto!
+    return intensity; // we return the light that hits the object
 }

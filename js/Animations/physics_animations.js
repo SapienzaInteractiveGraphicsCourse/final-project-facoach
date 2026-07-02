@@ -2,19 +2,20 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as TWEEN from '@tweenjs/tween.js';
 
-// --- CONFIGURAZIONE GLOBALE ---
+// global variables
 import {State} from '../Core/state.js';
 
 import {getIntensityOnObject} from '../Core/utils.js';
 
+//control if there should be collitions
 export function checkCollisions(oldPos) {
-    // 4. COLLISIONI (Unificate)
     let onObject = false; 
 
+    //check for every platform
     State.platforms.forEach(plat => {
         if (plat.userData.active === false) return;
 
-        // Movimento piattaforme (Logica X/Z già discussa)
+        // moving platforms animation
         if (plat.userData.isMoving) {
             plat.userData.time += 0.02;
             const movement = Math.sin(plat.userData.time) * 3;
@@ -33,21 +34,23 @@ export function checkCollisions(oldPos) {
             }
         }
 
+        //dimentions of the platforms for coordinates on where to stop
         const dX = Math.abs(State.player.position.x - plat.position.x);
         const dZ = Math.abs(State.player.position.z - plat.position.z);
         const halfW = plat.geometry.parameters.width / 2 + 0.4;
         const halfD = plat.geometry.parameters.depth / 2 + 0.4;
 
         if (dX < halfW && dZ < halfD) {
-            // Regoliamo i margini di collisione basandoci sull'altezza della geometria
             const pHeight = plat.geometry.parameters.height / 2;
             const topLevel = plat.position.y + pHeight + 0.5; 
             const bottomLevel = plat.position.y - pHeight - 0.5;
 
+            //stop player from falling (velocityY=0) if it's on a platform coordinates
             if (State.player.position.y <= topLevel && State.player.position.y > plat.position.y && State.velocityY <= 0) {
                 State.player.position.y = topLevel;
                 State.velocityY = 0;
                 onObject = true;
+                //move the player with the platform if it's a moving one
                 if (plat.userData.isMoving) {
                     State.player.position.x += (plat.userData.deltaX || 0);
                     State.player.position.z += (plat.userData.deltaZ || 0);
@@ -61,32 +64,32 @@ export function checkCollisions(oldPos) {
         }
     });
 
-    // 2. COLLISIONE DISCO SPECIFICA
-    // Calcoliamo la distanza orizzontale dal centro del disco
+    // specific collition for the disk (it's not a platform
+    //disk parameters
     const dX = State.player.position.x - State.floorDisk.position.x;
     const dZ = State.player.position.z - State.floorDisk.position.z;
     const distance = Math.sqrt(dX * dX + dZ * dZ);
 
-    const radius = 34; // Il raggio del tuo disco
-    const pHeight = 1; // Metà altezza della geometria del disco (saucerGeo ha altezza 2)
+    const radius = 34;
+    const pHeight = 1;
     const topLevel = State.floorDisk.position.y + pHeight + 0.5;
 
-    // Se il giocatore è sopra il disco
+    // check like the platforms if the coordinates of player are on top of the disk, and in that case set falling to 0
     if (distance < radius) {
         if (State.player.position.y <= topLevel && State.player.position.y > State.floorDisk.position.y && State.velocityY <= 0) {
             State.player.position.y = topLevel;
             State.velocityY = 0;
-            onObject = true; // Il giocatore è sul disco
+            onObject = true; //player is on disk
         }
     }
 
-    // 3. GRAVITÀ E SALTO (Usano onObject)
+    // gravity set
     if (onObject) {
         State.isJumping = false;
         State.velocityY = 0;
     }   
 
-    // --- B. COLLISIONE MURI (Solo blocco laterale) ---
+    // wall collisions
     State.walls.forEach(wall => {
         const dX = Math.abs(State.player.position.x - wall.position.x);
         const dZ = Math.abs(State.player.position.z - wall.position.z);
@@ -95,7 +98,7 @@ export function checkCollisions(oldPos) {
         const halfD = wall.geometry.parameters.depth / 2 + 0.4;
         const h = wall.geometry.parameters.height / 2;
 
-        // Se siamo dentro i confini X e Z del muro E la nostra altezza Y è "dentro" il muro
+        // if coordinates are on the borders of the walls, don't let the player coordinates to be updated by WASD
         if (dX < halfW && dZ < halfD) {
             if (State.player.position.y < wall.position.y + h + 0.5 && State.player.position.y > wall.position.y - h - 0.5) {
                 State.player.position.x = oldPos.x;
@@ -110,11 +113,11 @@ export function checkCollisions(oldPos) {
 }
 
 export function updateGravity() {
-    // 3. GRAVITÀ
+    // vertical updates for gravity
     State.velocityY += State.gravity;
     State.player.position.y += State.velocityY;
 
-    // Reset caduta
+    // Reset position if fall to black hole
     if (State.player.position.y < -30) {
         State.player.position.set(0, 5, 5);
         State.velocityY = 0;

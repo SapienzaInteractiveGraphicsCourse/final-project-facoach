@@ -2,35 +2,37 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as TWEEN from '@tweenjs/tween.js';
 
-// --- CONFIGURAZIONE GLOBALE ---
+// global variables
 import {State} from '../Core/state.js';
 
 import {getIntensityOnObject} from '../Core/utils.js';
 
 export function updateMovement(deltaTime){
-    // 2. MOVIMENTO
+    // movement
     if (!State.isConsoleScreenOpen) {
-        // Moltiplichiamo i vecchi valori per 60 per convertirli in m/s
+        // adapt speed based on frames of the screen
         const baseSpeed = State.keys.shift ? 15.0 : 7.2; 
-        const currentSpeed = baseSpeed * deltaTime; // <-- 2. Moltiplicato per deltaTime!
+        const currentSpeed = baseSpeed * deltaTime;
+        //move the player based on the key pressed
         if (State.keys.w) State.player.translateZ(-currentSpeed);
         if (State.keys.s) State.player.translateZ(currentSpeed);
         if (State.keys.a) State.player.translateX(-currentSpeed);
         if (State.keys.d) State.player.translateX(currentSpeed);
     }
 
+    // animate arms and legs
     if ((State.keys.w || State.keys.s || State.keys.a || State.keys.d) && !State.isConsoleScreenOpen) {
-        const speed = 0.008; // Velocità dell'oscillazione
+        const speed = 0.008; //oscillation speed
         const time = Date.now() * speed;
-        const amplitude = 0.5; // Quanto deve oscillare (in radianti)
+        const amplitude = 0.5; // radiants of how much oscillates
 
-        // Usiamo Math.sin per creare un movimento avanti e indietro armonico
+        // using sine function to make oscillations of arms and legs
         if (State.leftArm) State.leftArm.rotation.x = Math.sin(time) * amplitude;
-        if (State.rightArm) State.rightArm.rotation.x = -Math.sin(time) * amplitude; // Invertito
+        if (State.rightArm) State.rightArm.rotation.x = -Math.sin(time) * amplitude; // inverted
         if (State.leftLeg) State.leftLeg.rotation.x = -Math.sin(time) * amplitude;
-        if (State.rightLeg) State.rightLeg.rotation.x = Math.sin(time) * amplitude; // Invertito
+        if (State.rightLeg) State.rightLeg.rotation.x = Math.sin(time) * amplitude; // inverted
     } else {
-        // Quando è fermo, riporta le braccia in posizione naturale (opzionale)
+        // when not moving, go back to default position of arms and legs using linear interpolation (lerp)
         if (State.leftArm) State.leftArm.rotation.x = THREE.MathUtils.lerp(State.leftArm.rotation.x, 0, 0.1);
         if (State.rightArm) State.rightArm.rotation.x = THREE.MathUtils.lerp(State.rightArm.rotation.x, 0, 0.1);
         if (State.leftLeg) State.leftLeg.rotation.x = THREE.MathUtils.lerp(State.leftLeg.rotation.x, 0, 0.1);
@@ -39,46 +41,42 @@ export function updateMovement(deltaTime){
 }
 
 export function updateCameraPosition() {
-    // 1. Calcola dove "vorrebbe" stare la camera se non ci fossero muri.
-        // Partiamo dall'origine del giocatore e andiamo all'indietro e in alto.
+    // calculate where the camera should be
         const idealPos = new THREE.Vector3(0, State.cameraHeightOffset, State.idealCameraDistance);
         
-        // Applichiamo l'inclinazione verticale (Pitch) e poi la rotazione orizzontale del player (Yaw)
+        // we apply the inclination
         idealPos.applyAxisAngle(new THREE.Vector3(1, 0, 0), State.cameraPitch);
         idealPos.applyQuaternion(State.player.quaternion);
         
-        // Trasformiamo in coordinate globali sommandola alla posizione del player
-        // Alziamo leggermente il punto di partenza (es. y + 1) per puntare alle spalle e non ai piedi
+        // we find the global coordinates adding the calculated ones relative to the player position
         const playerPos = new THREE.Vector3(State.player.position.x, State.player.position.y + 1.5, State.player.position.z);
         idealPos.add(playerPos);
 
-        // 2. Prepara il raggio per il controllo collisioni
-        // Direzione dal player verso la posizione ideale della camera
+        // prepare the ray from player to the desired position
         const dir = new THREE.Vector3().subVectors(idealPos, playerPos).normalize();
         const maxDist = playerPos.distanceTo(idealPos);
         
         State.cameraRaycaster.set(playerPos, dir);
 
-        // 3. Controlla se il raggio colpisce un muro
+        //check if there are position
         const intersects = State.cameraRaycaster.intersectObjects(State.walls, false);
 
         let finalPos = idealPos;
 
         if (intersects.length > 0) {
             const hitDist = intersects[0].distance;
-            // Se l'ostacolo è più vicino della telecamera, avviciniamo la telecamera
+            // if there's an obstacle, set the distance to the hit point
             if (hitDist < maxDist) {
-                // Posizioniamo la telecamera leggermente "prima" del muro (es. 0.2 unità per margine)
+                // set position to just before the wall to avoid clipping
                 const safeDist = Math.max(State.minCameraDistance, hitDist - 0.2);
                 finalPos = new THREE.Vector3().copy(playerPos).add(dir.multiplyScalar(safeDist));
             }
         }
 
-        // 4. Aggiorna fluidamente la posizione della camera
-        // Usiamo lerp per un movimento morbido ed evitare scatti improvvisi
+        // smooth update of the position
         State.camera.position.lerp(finalPos, 0.2);
 
-        // 5. Fai guardare la camera sempre verso il player (con l'offset verticale e il pitch)
+        // set camera to look at the player
         const lookAtPos = new THREE.Vector3(0, 1.5, 0); // Guarda le spalle del robot
         lookAtPos.applyAxisAngle(new THREE.Vector3(1, 0, 0), State.cameraPitch);
         lookAtPos.applyQuaternion(State.player.quaternion);

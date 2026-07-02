@@ -1,60 +1,34 @@
-// =============================================================
-//  state.js  —  Sorgente unica della verità (single source of truth)
-// =============================================================
-//
-//  REGOLA D'ORO (mappata 1:1 sul tuo main.js attuale):
-//
-//   • Ciò che nel main.js era `const`  ->  resta un export NUDO qui sotto.
-//     In main.js NON cambi nulla: continui a scrivere `keys.w`, `gravity`,
-//     `activePipes.push(...)`. Funziona perché sono riferimenti/costanti
-//     che non riassegni mai, e il "live binding" dei moduli ES li tiene
-//     sempre aggiornati in tempo reale.
-//
-//   • Ciò che nel main.js era `let`  ->  finisce dentro l'oggetto `State`.
-//     Questi sono gli unici che richiedono il prefisso. Due casi:
-//       - PRIMITIVI che riassegni (velocityY, i flag, i contatori):
-//         scrivi sempre `State.velocityY = 0`, `State.isLampOn = true`, ...
-//       - RIFERIMENTI a oggetti (scene, player, le mesh, gli array):
-//         li CREI una sola volta con `State.scene = new THREE.Scene()`,
-//         e in ogni funzione che li USA aggiungi in cima una riga di
-//         destructuring -> `const { scene, player, platforms } = State;`
-//         così il corpo della funzione resta INVARIATO.
-//
-// =============================================================
-
 import * as THREE from 'three';
 
-// -------------------------------------------------------------
-//  STATE  —  tutto ciò che era `let` nel main.js (lo stato mutabile)
-// -------------------------------------------------------------
+//global state object to hold all the variables that need to be accessed across different modules
 export const State = {
 
-  // --- Core / Engine ---------------------------------------
+  // Core / Engine
   scene: null,
   camera: null,
   renderer: null,
   textureLoader: null,
   loadingManager: null,
   player: null,
-  sunLight: null,            // Luce direzionale (il "Sole")
+  sunLight: null,            // directional gloobal light
 
-  // --- Fisica e movimento ----------------------------------
+  // --- Physics and movement
   velocityY: 0,
   isJumping: false,
 
-  // --- Geometria del livello (collisioni) ------------------
+  // --- Collision geometry
   platforms: [],
   walls: [],
   door: null,
-  doorOriginalY: null,       // Altezza esatta della porta chiusa
+  doorOriginalY: null,       // initial height of the door
   doorTween: null,
-  isDoorOpen: false,         // La porta è in transizione o aperta?
+  isDoorOpen: false,         // door moovement state
 
-  // --- Materiali condivisi ---------------------------------
+  // --- Materials
   starMaterial: null,
   wireMaterial: null,
 
-  // --- Sistema celeste -------------------------------------
+  // --- Solar system objects and black hole
   planet: null,
   planet2: null,
   planet3: null,
@@ -81,24 +55,24 @@ export const State = {
   cometGroup: null,
   cometTail: null,
 
-  // --- Avatar del giocatore (parti animate) ----------------
+  // --- player components
   leftArm: null,
   rightArm: null,
   leftLeg: null,
   rightLeg: null,
 
-  // --- Interazione: cristalli, pulsanti, luci, sensori -----
+  // --- Interactive elements
   s1: null,
   s2: null,
   crystal1: null,
   crystal2: null,
-  buttonSwitch: null,        // Oggetto 3D
-  buttonSwitch2: null,       // Oggetto 3D
-  interactLight: null,       // La luce che attiviamo
+  buttonSwitch: null,        // button 3d model
+  buttonSwitch2: null,       // button 3d model
+  interactLight: null,       
   isLightOn: false,
-  luce: null,                // Luce interattiva
-  playerGlow: null,          // Luce soffusa intorno al player
-  playerLamp: null,          // La torcia del giocatore
+  luce: null,                // interactive light
+  playerGlow: null,          // light from the player
+  playerLamp: null,          // player torchlight
   isLampOn: false,
   sensors: [],               // Array di sensori
 
@@ -106,64 +80,62 @@ export const State = {
   movingButton2: null,
   buttonInitialPos: null,
   buttonInitialPos2: null,
-  isButtonAnimating: false,  // Anti-spam tasto F durante il movimento
+  isButtonAnimating: false, 
   isButtonAnimating2: false,
 
-  // --- Tavolo ologrammi ------------------------------------
+  // --- hologram
   holoSystem: null,
 
-  // --- Radar -----------------------------------------------
-  radarBlip: null,           // Oggetto 3D del puntino
-  blipTimer: 0,              // Gestisce il tempo del lampeggio
+  // --- Radar 
+  radarBlip: null,           // 3d dot on the radar
+  blipTimer: 0,              // manage how often the blip appears
 
-  // --- Console sci-fi --------------------------------------
-  scifiConsole: null,        // Modello 3D della console
-  consoleIndicator: null,    // Flag visivo (!)
+  // --- Console sci-fi
+  scifiConsole: null,        // 3d model
+  consoleIndicator: null,    // Exclamation point on the console
   isConsoleScreenOpen: false,
   hasInteractedWithConsole: false,
 
-  // --- Reattore e centrifuga -------------------------------
-  ReactorGroup: null,        // Gruppo del modello del reattore
+  // --- Reactor and pedestal
+  ReactorGroup: null,        // Reactor group (needed as group to add ! after)
   ReactorModel: null,
   isReactorPickedUp: false,
-  reactorPedestal: null,     // Gruppo dell'intero piedistallo
+  reactorPedestal: null,     // reactor pedestal group
   isReactorPlaced: false,
-  spoke1: null,              // Supporti dell'anello centrifuga
+
+  // --- Spaceship parts
+  spoke1: null,              // centrifuge supports
   spoke2: null,
-  floorDisk: null,           // Disco del pavimento che si solleva
+  floorDisk: null,           // pavement disk that needs collision
 
-  // --- Camera ----------------------------------------------
+  // --- Camera
   cinematicAngle: 0,
-  cameraPitch: 0,            // Inclinazione su/giù
-
+  cameraPitch: 0,            // inclination of the camera (up and down)
 
 
   // -------------------------------------------------------------
-  //  CONFIG e CONTENITORI  —  tutto ciò che era `const` nel main.js
-  //  Export NUDI: in main.js li usi senza prefisso, esattamente come ora.
-  // -------------------------------------------------------------
+  //  Constants
 
-  // Input da tastiera (mutato per riferimento: keys.w = true)
+  // keyboard inputs
   keys: { w: false, a: false, s: false, d: false, shift: false },
 
-  // Costanti fisiche
+  // Physics constants
   gravity: -0.01,
   jumpForce: 0.26,
   clock: new THREE.Clock(),
 
-  // Array animati (riempiti con .push(), iterati nel loop)
-  activePipes: [],        // Texture dei tubi da scorrere
-  serverLEDs: [],        // LED del mainframe da far lampeggiare
-  animatedScreens: [],    // Schermi da aggiornare ogni frame
+  // animated arrays
+  activePipes: [],        // tubes with moving textures
+  serverLEDs: [],        // Mainframe with blinking LEDs
+  animatedScreens: [],    // console screens with animated texts
 
-  // Costanti della camera
-  idealCameraDistance: 5, // Distanza base (Z=5)
-  minCameraDistance: 1,   // Avvicinamento massimo al player
-  cameraHeightOffset: 2,  // Altezza base (Y=2)
+  // Camera constants
+  idealCameraDistance: 5, // base distance from the player
+  minCameraDistance: 1,   // maximum approach to the player
+  cameraHeightOffset: 2,  // base height from ground
   cameraRaycaster: new THREE.Raycaster(),
 
-  // Riferimenti al DOM (gli script type="module" sono "deferred":
-  // il DOM è già pronto quando questo file viene eseguito)
+  // DOM references
   promptUI: document.getElementById('interaction-prompt'),
   victoryUI: document.getElementById('victory-screen'),
 };
