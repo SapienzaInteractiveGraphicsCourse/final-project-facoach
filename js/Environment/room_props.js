@@ -730,7 +730,7 @@ export function createEnergyPipe(x, z) {
 
     //Hitbox
     const hitboxGeo = new THREE.BoxGeometry(1, 5, 1);
-    const hitboxMat = new THREE.MeshBasicMaterial({ visible: false })
+    const hitboxMat = new THREE.MeshBasicMaterial({ visible: false });
     const hitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
     
     // place hitbox on the pipe position
