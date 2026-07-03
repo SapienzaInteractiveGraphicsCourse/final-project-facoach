@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 import * as TWEEN from '@tweenjs/tween.js';
 
-// --- CONFIGURAZIONE GLOBALE ---
+// global variables
 import {State} from '../Core/state.js';
 
+//add all background stars
 export function createStars() {
+    //make geometry and material
     const starGeometry = new THREE.BufferGeometry();
     State.starMaterial = new THREE.PointsMaterial({
         color: 0xffffff,
@@ -13,63 +15,65 @@ export function createStars() {
         opacity:1
     });
 
+    //add randomly in the sky
     const starVertices = [];
     for (let i = 0; i < 3200; i++) {
-        // Creiamo posizioni casuali in un raggio molto ampio (es. tra -500 e 500)
+        // choose for every star a random position
         const x = (Math.random() - 0.5) * 500;
         const y = (Math.random() - 0.5) * 500;
         const z = (Math.random() - 0.5) * 500;
-        //Escludiamo le stelle troppo vicine alla stanza
+        //don't choose places too close to the main room
         if (x > -50 && x < 50 && y > -200 && y < 50 && z > -50 && z < 50) {
         } else{
             starVertices.push(x, y, z);
         }
     }
 
+    //add them to the scene
     starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
     
     const stars = new THREE.Points(starGeometry, State.starMaterial);
     State.scene.add(stars);
     
-    return stars; // Lo restituiamo se vogliamo farlo ruotare dopo
+    return stars; 
 }
 
+//add a galaxy in give coordinates
 export function createGalaxy( x, y, z, coreColorInput = '#ffe6aa', armColorInput = '#ff00aa') {
-    const particleCount = 15000; // Numero di stelle nella galassia
+    const particleCount = 15000; // number of stars in the galaxy (particles)
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
 
-    // Parametri della galassia
-    const arms = 3;             // Numero di bracci della spirale
-    const galaxyRadius = 80;    // Raggio della galassia
-    const coreColor = new THREE.Color(coreColorInput); // Centro caldo (giallo/bianco)
-    const armColor = new THREE.Color(armColorInput);  // Bracci freddi (viola/magenta)
+    // parameters
+    const arms = 3;             // number of spiral arms
+    const galaxyRadius = 80;    // radius
+    const coreColor = new THREE.Color(coreColorInput); // color of center
+    const armColor = new THREE.Color(armColorInput);  // color of arms
 
     for (let i = 0; i < particleCount; i++) {
-        // 1. POSIZIONE
-        // Distanza dal centro (più stelle vicino al centro, meno fuori)
+        // choose a possition for every particle, with random radius (no bigger than max radius) placed in one of the arm
+        //more particless will happen in the center
         const radius = Math.random() * galaxyRadius * Math.pow(Math.random(), 2);
-        
-        // Calcolo dell'angolo per creare l'effetto spirale (Bracci)
         const armAngle = ((i % arms) / arms) * Math.PI * 2;
-        const spinAngle = radius * 0.1; // Determina quanto si "avvolge" la spirale
+        const spinAngle = radius * 0.1; // how much it enhance spiral
 
-        // Casualità per dare spessore ai bracci (effetto nuvola)
+        // randomness to add volume to spirals
         const randomX = (Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1)) * (radius * 0.1);
-        const randomY = (Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1)) * (radius * 0.05); // Più piatta sull'asse Y
+        const randomY = (Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1)) * (radius * 0.05);
         const randomZ = (Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1)) * (radius * 0.1);
 
+        //phisical position of every point saved in the array
         const i3 = i * 3;
         positions[i3]     = Math.cos(armAngle + spinAngle) * radius + randomX;
         positions[i3 + 1] = randomY; // Altezza della galassia
         positions[i3 + 2] = Math.sin(armAngle + spinAngle) * radius + randomZ;
 
-        // 2. COLORE (Sfumatura dal nucleo ai bracci)
+        // color gradient
         const mixedColor = coreColor.clone();
-        // Sfumiamo tra il colore del nucleo e quello dei bracci in base alla distanza
         mixedColor.lerp(armColor, radius / galaxyRadius);
 
+        //add color of the point in the array
         colors[i3]     = mixedColor.r;
         colors[i3 + 1] = mixedColor.g;
         colors[i3 + 2] = mixedColor.b;
@@ -78,7 +82,7 @@ export function createGalaxy( x, y, z, coreColorInput = '#ffe6aa', armColorInput
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-    // Materiale delle singole stelle della galassia
+    // Material of single points
     const material = new THREE.PointsMaterial({
         size: 0.2,
         vertexColors: true, // Dice a Three.js di usare i colori calcolati sopra
@@ -91,57 +95,56 @@ export function createGalaxy( x, y, z, coreColorInput = '#ffe6aa', armColorInput
 
     State.galaxy = new THREE.Points(geometry, material);
     
-    // Posizioniamo la galassia LONTANISSIMA nel cielo
-    // Scegli coordinate molto grandi (es. x: 500, y: 300, z: -600)
+    // set galaxxy far from main room, customizable
     State.galaxy.position.set(x, y, z);
     
-    // Ruotiamola leggermente per vederla "di taglio/in diagonale" (più suggestiva)
+    // add rotation to not make it flat
     State.galaxy.rotation.x = 0.6;
     State.galaxy.rotation.z = 0.2;
-
+    //add to scene
     State.galaxies.push(State.galaxy);
 }
 
+//add a black hole in given coordinates
 export function createBlackHole(x, y, z){
-    // --- IL BUCO NERO ---
+    // black hole group creation and placing
     State.blackHoleGroup = new THREE.Group();
-    // Posizionalo esattamente sotto la stanza iniziale, molto in profondità
     State.blackHoleGroup.position.set(x, y, z); 
 
-    // 1. L'Orizzonte degli Eventi (La sfera nera del nulla)
+    // event horizon (the black sphere)
     const bhGeo = new THREE.SphereGeometry(40, 32, 32);
     const bhMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
     const blackHole = new THREE.Mesh(bhGeo, bhMat);
     State.blackHoleGroup.add(blackHole);
 
-    // 2. Il Disco di Accrescimento (Sistema di Particelle Attivo)
-    const particleCount = 10000; // 10.000 frammenti di materia!
+    // accretion disk made of particles
+    const particleCount = 10000; // number of particles in the disk
     const diskGeo = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
 
-    const innerRadius = 42; // Appena fuori dalla sfera nera
-    const outerRadius = 130; // Fin dove si estende il disco
+    const innerRadius = 42; //minimum radius of the particles
+    const outerRadius = 130; // max radius of the particles
 
-    // Colori termici: caldissimo al centro, freddo ai bordi
-    const hotColor = new THREE.Color(0xffffff); // Bianco/Giallo incandescente
-    const coldColor = new THREE.Color(0xaa1100); // Viola profondo
+    // colors gradient of the disk
+    const hotColor = new THREE.Color(0xffffff); // center color
+    const coldColor = new THREE.Color(0xaa1100); // outer color
 
     for (let i = 0; i < particleCount; i++) {
-        // Distribuiamo le particelle. La formula "Math.pow" concentra più polvere vicino al centro
+        //distribute particles randomly in a radiuss and angle from the center
         const r = innerRadius + Math.pow(Math.random(), 3) * (outerRadius - innerRadius);
         const theta = Math.random() * Math.PI * 2;
 
-        // Variazione sull'asse Y per dare spessore al disco
-        // Più le particelle sono vicine al centro, più il disco è sottile e schiacciato dalla gravità
+        // Y variation to add variety
         const yThickness = (Math.random() - 0.5) * (800 / r); 
 
+        //saving positions of particles in an array
         const i3 = i * 3;
         positions[i3] = Math.cos(theta) * r;
         positions[i3 + 1] = yThickness; 
         positions[i3 + 2] = Math.sin(theta) * r;
 
-        // Sfumatura di colore in base alla distanza
+        // add the color gradient
         const mixedColor = hotColor.clone();
         mixedColor.lerp(coldColor, (r - innerRadius) / (outerRadius - innerRadius));
 
@@ -150,6 +153,7 @@ export function createBlackHole(x, y, z){
         colors[i3 + 2] = mixedColor.b;
     }
 
+    //physically place the calculated informations
     diskGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     diskGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
@@ -158,16 +162,16 @@ export function createBlackHole(x, y, z){
         vertexColors: true,
         transparent: true,
         opacity: 0.8,
-        blending: THREE.AdditiveBlending, // La luce si somma rendendo il centro abbagliante
-        depthWrite: false, // LA MAGIA ANTI-COMPENETRAZIONE! Ora i bordi non "tagliano" la sfera.
+        blending: THREE.AdditiveBlending, 
+        depthWrite: false, 
         fog: false
     });
 
     State.accretionDisk = new THREE.Points(diskGeo, diskMat);
     
-    // Incliniamo leggermente l'intero buco nero per un effetto più cinematografico
+    // slightly incline the black hole
     State.blackHoleGroup.rotation.z = 0.2; 
     State.blackHoleGroup.add(State.accretionDisk);
-
+    //add it to the scene
     State.scene.add(State.blackHoleGroup);
 }
