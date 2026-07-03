@@ -163,7 +163,7 @@ export function addPlanets(){
         State.planet3.castShadow = true;
         State.planet3.receiveShadow = true;
 
-        // add purpple light inside
+        // add purple light inside
         const coreLight = new THREE.PointLight(0x9900ff, 15, 40); 
         coreLight.position.set(0, 0, 0); 
         coreLight.castShadow = true; 
@@ -260,8 +260,8 @@ export function addComet(){
         State.cometOrbitGroup.position.copy(State.sunPosition); 
     
         // inclination of the orbit
-        State.cometOrbitGroup.rotation.x = 0.7; // Inclinazione trasversale
-        State.cometOrbitGroup.rotation.z = 0.3; // Inclinazione longitudinale
+        State.cometOrbitGroup.rotation.x = 0.7; 
+        State.cometOrbitGroup.rotation.z = 0.3; 
         State.scene.add(State.cometOrbitGroup);
     
         // local group of comet model and tail
