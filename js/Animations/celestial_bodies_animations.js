@@ -57,6 +57,16 @@ export function updateSolarSystem() {
         State.planet6.position.x = currentDistance;
     }
 
+    // satellite orbit and its blinking light
+    if (State.satellitePivot) {
+        State.satellitePivot.rotation.y += 0.02; // orbital velocity
+    }
+    if (State.satelliteLight) {
+        // blink: sine guides the oscillation, max makes the light be off for some time
+        const blink = Math.max(0, Math.sin(currenttime * 5));
+        State.satelliteLight.intensity = blink * 40;
+    }
+
     // planet axis rotations
     if (State.planet) State.planet.rotation.y += 0.005;
     if (State.planet2) State.planet2.rotation.y += 0.003;

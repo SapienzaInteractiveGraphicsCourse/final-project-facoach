@@ -55,6 +55,10 @@ export const State = {
   cometGroup: null,
   cometTail: null,
 
+  satellite: null,
+  satellitePivot: null,
+  satelliteLight: null,
+
   // --- player components
   leftArm: null,
   rightArm: null,

@@ -138,15 +138,59 @@ export function addPlanets(){
     loader.load('./models/Planet.glb', (gltf) => {
         State.planet = gltf.scene;
         State.planet.scale.set(4, 4, 4); 
-        // place the planet
         State.planet.position.set(-300, -40, 60);
-        // make model project shadows
         State.planet.castShadow = true;
         State.planet.receiveShadow = true;
 
-        //axis inclination
         State.planet.rotation.z = 0.41;
         State.sunPivot1.add(State.planet);
+
+        // satellite with diagonal orbit
+        loader.load('./models/Satellite.glb', (gltf) => {
+            State.satellite = gltf.scene;
+            State.satellite.scale.set(0.15, 0.15, 0.15); // small
+            State.satellite.traverse((node) => {
+                if (node.isMesh) {
+                    node.castShadow = true;
+                    node.receiveShadow = true;
+                }
+            });
+
+            // pivot centered on the planet
+            State.satellitePivot = new THREE.Group();
+            State.satellitePivot.position.set(0, 0, 0);
+
+            // rotation of the pivot to have a rotation on a different plane rather than sysstem orbital plane
+            State.satellitePivot.rotation.x = 1.1;   // ~63°, inclinazione marcata
+            State.satellitePivot.rotation.z = 0.4;
+
+            // orbit radius
+            State.satellite.position.set(2.5, 0, 0);
+            State.satellitePivot.add(State.satellite);
+
+            // light of the satellite
+            // we use the sphere on the antenna as a light
+            const beacon = State.satellite.getObjectByName('Sphere');
+            if (beacon) {
+                beacon.material = new THREE.MeshStandardMaterial({
+                    color: 0xff0000,
+                    emissive: 0xff0000,
+                    emissiveIntensity: 0   // starts off, turns on in animate
+                });
+                State.satelliteBeacon = beacon;
+
+                // real light near the sphere
+                State.satelliteLight = new THREE.PointLight(0xff0000, 0, 8);
+                beacon.add(State.satelliteLight); //gets added on the antenna
+            }
+
+            // add pivot to planet to gain also its motion
+            State.planet.add(State.satellitePivot);
+
+            console.log("Satellite caricato correttamente");
+        }, undefined, (error) => {
+            console.error("Errore nel caricamento del satellite:", error);
+        });
 
         console.log("Modello caricato correttamente");
     }, undefined, (error) => {
