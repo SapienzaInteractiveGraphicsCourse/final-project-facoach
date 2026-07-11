@@ -33,7 +33,8 @@ The codebase is modularly organized following a clean architecture to separate c
     ├── Core/                # Modules dedicated to core mechanics
     │   ├── state.js            # Global database sharing state across all modules
     │   ├── controls.js         # Input listeners (keyboard, mouse, flashlight toggles)
-    │   └── utils.js            # Shared  raycasting utilities
+    │   ├── utils.js            # Shared  raycasting utilities
+    │   └── audio.js            # utilities to handle music and sfx
     │
     ├── Environment/        # Modules dedicated to procedural generation & world-building
     │   ├── room_props.js          # Mainframe, reactor core, consoles, cryopods, and interactive meshes
