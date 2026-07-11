@@ -5,6 +5,7 @@ import * as TWEEN from '@tweenjs/tween.js';
 import {setupEventListeners} from './Core/controls.js';
 import {createWorld} from './Environment/world.js';
 import {animate} from './Animations/animation.js';
+import { initAudio, loadGlobal } from './Core/audio.js';
 
 // global variables
 import {State} from './Core/state.js';
@@ -63,6 +64,19 @@ function init() {
     State.renderer.shadowMap.enabled = true; 
     State.renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
     document.body.appendChild(State.renderer.domElement);
+
+    //audio
+    initAudio(State.camera, State.loadingManager);
+
+    loadGlobal('ambient', './audio/music/ambient_loop.mp3', { loop: true, volume: 0.29 });
+    loadGlobal('button', './audio/sfx/button.mp3', { volume: 0.7 });
+    loadGlobal('lamp', './audio/sfx/torchlight.mp3', { volume: 0.5 });
+    loadGlobal('pickup', './audio/sfx/pickup.mp3', { volume: 0.8 });
+    loadGlobal('place', './audio/sfx/pickup.mp3', { volume: 0.8 });
+    loadGlobal('victory', './audio/sfx/victory.mp3', { volume: 0.5 });
+    loadGlobal('door', './audio/sfx/door.mp3', { volume: 1.4 });
+    loadGlobal('footstep', './audio/sfx/footstep.mp3', { volume: 0.8 });
+
 
     createLights();
     createWorld(); //calls all of the objects loading, that will be waited during the loading

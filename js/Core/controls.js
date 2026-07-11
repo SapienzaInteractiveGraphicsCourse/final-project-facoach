@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import * as TWEEN from '@tweenjs/tween.js';
 
 import {openSciFiDoor, closeSciFiDoor} from '../Animations/door_animations.js';
+import { play, stop, setMasterVolume, resumeContext } from './audio.js';
 
 // global variables
 import {State} from './state.js';
@@ -15,22 +16,24 @@ export function setupEventListeners() {
         State.keys[e.key.toLowerCase()] = true;
         
         //jump
-        if (e.key === ' ' && !State.isJumping && !State.isConsoleScreenOpen) {
+        if (e.key === ' ' && !State.isJumping && !State.isConsoleScreenOpen && !State.isPaused) {
             State.velocityY = State.jumpForce;
             State.isJumping = true;
         }
 
         //torchlight
         if (e.key.toLowerCase() === 'e') {
-            if (State.isConsoleScreenOpen) return; // block torch toggle if console is open
+            if (State.isConsoleScreenOpen || State.isPaused) return; // block torch toggle if console is open or game is paused
             State.isLampOn = !State.isLampOn;
             State.playerLamp.intensity = State.isLampOn ? 9 : 0;
             State.playerGlow.intensity = State.isLampOn ? 5 : 0;
+            play('lamp');
             console.log("Lampada: " + (State.isLampOn ? "Accesa" : "Spenta"));
         }
 
         //object inteeractions
         if (e.key.toLowerCase() === 'f') {
+
 
             // take reactor if player is close enough
             if (State.ReactorModel && !State.isReactorPickedUp) {
@@ -52,6 +55,8 @@ export function setupEventListeners() {
                         State.ReactorGroup.remove(State.consoleIndicator);
                         State.reactorPedestal.add(State.consoleIndicator);
                     }
+
+                    play('pickup');
                     return; // "return" stop the function to not activate other interactive objects if they are close
                 }
             }
@@ -84,7 +89,11 @@ export function setupEventListeners() {
                     const legendUI = document.getElementById('controls-legend');
                     if (legendUI) legendUI.style.display = 'none';
 
-
+                    //audio
+                    play('pickup');
+                    stop('ambient');
+                    play('victory');
+                    
                     return; // "return" stops the function to avoid activating other interactive objects if they are close
                 }
             }
@@ -117,6 +126,8 @@ export function setupEventListeners() {
             const distance2 = State.player.position.distanceTo(State.buttonSwitch2.position);
 
             if (distance < 3) {
+
+                play('button');
 
                 // animation for button press
                 if (State.movingButton && State.buttonInitialPos && !State.isButtonAnimating) {
@@ -158,6 +169,8 @@ export function setupEventListeners() {
             //second button for the door
             if (distance2 < 3) { 
 
+                play('button'); //audio
+
                 // aniamtion for button press, like before
                 if (State.movingButton2 && State.buttonInitialPos2 && !State.isButtonAnimating2) {
                     State.isButtonAnimating2 = true;
@@ -178,6 +191,8 @@ export function setupEventListeners() {
                 openSciFiDoor(); // calls the function that opens the door
             }
         }
+
+        
     });
     //keys release
     window.addEventListener('keyup', (e) => {
@@ -205,6 +220,77 @@ export function setupEventListeners() {
             State.cameraPitch = Math.max(-Math.PI / 4, Math.min(Math.PI / 4, State.cameraPitch));
         }
     });
+
+
+    // PAUSE MENU 
+    // Esc toggles the pointerlock, we use it instead oof keydown because by removing pointerlock thingss might work in a weird way
+    document.addEventListener('pointerlockchange', () => {
+        const stillLocked = document.pointerLockElement === State.renderer.domElement;
+
+        if (!stillLocked && !State.isPaused
+            && !State.isConsoleScreenOpen && !State.isReactorPlaced) {
+            openPauseMenu();
+        }
+    });
+
+    const resumeBtn = document.getElementById('resume-btn');
+    if (resumeBtn) {
+        resumeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();   // evita che il click "attraversi" fino al canvas
+            closePauseMenu();
+        });
+    }
+
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeValue = document.getElementById('volume-value');
+    if (volumeSlider) {
+        volumeSlider.addEventListener('input', (e) => {
+            State.masterVolume = parseFloat(e.target.value);
+            volumeValue.innerText = Math.round(State.masterVolume * 100) + '%';
+            volumeSlider.addEventListener('input', (e) => {
+            State.masterVolume = parseFloat(e.target.value);
+            volumeValue.innerText = Math.round(State.masterVolume * 100) + '%';
+            setMasterVolume(State.masterVolume);
+        });
+        });
+    }
+
+    //ambient music
+    State.renderer.domElement.addEventListener('click', () => {
+        State.renderer.domElement.requestPointerLock();
+
+        resumeContext();
+        if (!State.musicStarted) {
+            State.musicStarted = true;
+            play('ambient');
+        }
+    });
+}
+
+export function openPauseMenu() {
+    State.isPaused = true;
+    //lower music volume
+    setMasterVolume(State.masterVolume * 0.3);
+
+    const menu = document.getElementById('pause-menu');
+    if (menu) menu.classList.add('visible');
+
+    // azzera i tasti: se rilasci W mentre il menù è aperto,
+    // il keyup arriva comunque, ma meglio non fidarsi
+    State.keys.w = State.keys.a = State.keys.s = State.keys.d = false;
+    State.keys.shift = false;
+}
+
+export function closePauseMenu() {
+    State.isPaused = false;
+
+    //set volume back to normal
+    setMasterVolume(State.masterVolume);
+
+    const menu = document.getElementById('pause-menu');
+    if (menu) menu.classList.remove('visible');
+
+    State.renderer.domElement.requestPointerLock();
 }
 
 function onWindowResize() {

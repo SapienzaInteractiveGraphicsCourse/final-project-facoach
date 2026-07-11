@@ -62,6 +62,26 @@
         <h1 class="victory-title">MISSION ACCOMPLISHED</h1>
         <p class="victory-subtitle">REACTOR SECURED. EVACUATION PROTOCOL INITIATED.</p>
     </div>
+
+    <div id="pause-menu">
+    <div class="pause-panel">
+        <div class="console-header">SYSTEM PAUSED</div>
+
+        <div class="pause-section">
+            <label for="volume-slider">MASTER VOLUME</label>
+            <div class="slider-row">
+                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.6">
+                <span id="volume-value">60%</span>
+            </div>
+        </div>
+
+        <button id="resume-btn" class="pause-btn">RESUME</button>
+
+        <div class="console-footer">
+            Click RESUME to continue
+        </div>
+    </div>
+    </div>
     
     <script type="importmap">
     {

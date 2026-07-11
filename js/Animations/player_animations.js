@@ -6,10 +6,11 @@ import * as TWEEN from '@tweenjs/tween.js';
 import {State} from '../Core/state.js';
 
 import {getIntensityOnObject} from '../Core/utils.js';
+import { play } from '../Core/audio.js';
 
 export function updateMovement(deltaTime){
     // movement
-    if (!State.isConsoleScreenOpen) {
+    if (!State.isConsoleScreenOpen && !State.isPaused) {
         // adapt speed based on frames of the screen
         const baseSpeed = State.keys.shift ? 15.0 : 7.2; 
         const currentSpeed = baseSpeed * deltaTime;
@@ -21,22 +22,34 @@ export function updateMovement(deltaTime){
     }
 
     // animate arms and legs
-    if ((State.keys.w || State.keys.s || State.keys.a || State.keys.d) && !State.isConsoleScreenOpen) {
+    if ((State.keys.w || State.keys.s || State.keys.a || State.keys.d) && !State.isConsoleScreenOpen && !State.isPaused) {
         const speed = 0.008; //oscillation speed
         const time = Date.now() * speed;
-        const amplitude = 0.5; // radiants of how much oscillates
+        const amplitude = State.keys.shift ? 1.0 : 0.5;; // radiants of how much oscillates
 
         // using sine function to make oscillations of arms and legs
         if (State.leftArm) State.leftArm.rotation.x = Math.sin(time) * amplitude;
         if (State.rightArm) State.rightArm.rotation.x = -Math.sin(time) * amplitude; // inverted
         if (State.leftLeg) State.leftLeg.rotation.x = -Math.sin(time) * amplitude;
         if (State.rightLeg) State.rightLeg.rotation.x = Math.sin(time) * amplitude; // inverted
+
+        // footstep audio. a sound every tot seconds, faster during sprint
+        const stepInterval = State.keys.shift ? 0.28 : 0.45;
+        State.footstepTimer += deltaTime;
+        if (State.footstepTimer >= stepInterval && !State.isJumping) {
+            State.footstepTimer = 0;
+            play('footstep');
+        }
+
     } else {
         // when not moving, go back to default position of arms and legs using linear interpolation (lerp)
         if (State.leftArm) State.leftArm.rotation.x = THREE.MathUtils.lerp(State.leftArm.rotation.x, 0, 0.1);
         if (State.rightArm) State.rightArm.rotation.x = THREE.MathUtils.lerp(State.rightArm.rotation.x, 0, 0.1);
         if (State.leftLeg) State.leftLeg.rotation.x = THREE.MathUtils.lerp(State.leftLeg.rotation.x, 0, 0.1);
         if (State.rightLeg) State.rightLeg.rotation.x = THREE.MathUtils.lerp(State.rightLeg.rotation.x, 0, 0.1);
+
+        // stop: reset timer so first step restart audio
+        State.footstepTimer = 0;
     }
 }
 

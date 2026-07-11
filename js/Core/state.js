@@ -112,6 +112,14 @@ export const State = {
   cinematicAngle: 0,
   cameraPitch: 0,            // inclination of the camera (up and down)
 
+  //pausse elements
+  isPaused: false,
+  masterVolume: 0.6,   // for audio manager
+
+  //audio
+  musicStarted: false,
+  footstepTimer: 0,
+
 
   // -------------------------------------------------------------
   //  Constants

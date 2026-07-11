@@ -6,6 +6,7 @@ import * as TWEEN from '@tweenjs/tween.js';
 import {State} from '../Core/state.js';
 
 import {getIntensityOnObject} from '../Core/utils.js';
+import { play, stop, setMasterVolume, resumeContext } from '../Core/audio.js';
 
 //open door
 export function openSciFiDoor() {
@@ -26,6 +27,9 @@ export function openSciFiDoor() {
     if (doorIndex > -1) {
         State.walls.splice(doorIndex, 1);
     }
+
+    //audio
+    play('door');
 
     // timer before closing
     setTimeout(() => {
@@ -49,4 +53,7 @@ export function closeSciFiDoor() {
             }
         })
         .start();
+
+    //audio
+    play('door');
 }
