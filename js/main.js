@@ -68,14 +68,15 @@ function init() {
     //audio
     initAudio(State.camera, State.loadingManager);
 
-    loadGlobal('ambient', './audio/music/ambient_loop.mp3', { loop: true, volume: 0.29 });
-    loadGlobal('button', './audio/sfx/button.mp3', { volume: 0.7 });
-    loadGlobal('lamp', './audio/sfx/torchlight.mp3', { volume: 0.5 });
+    loadGlobal('ambient', './audio/music/ambient_loop.mp3', { loop: true, volume: 0.35 });
+    loadGlobal('button', './audio/sfx/button.mp3', { volume: 0.9 });
+    loadGlobal('lamp', './audio/sfx/torchlight.mp3', { volume: 0.9 });
     loadGlobal('pickup', './audio/sfx/pickup.mp3', { volume: 0.8 });
     loadGlobal('place', './audio/sfx/pickup.mp3', { volume: 0.8 });
     loadGlobal('victory', './audio/sfx/victory.mp3', { volume: 0.5 });
-    loadGlobal('door', './audio/sfx/door.mp3', { volume: 1.4 });
+    loadGlobal('door', './audio/sfx/door.mp3', { volume: 2 });
     loadGlobal('footstep', './audio/sfx/footstep.mp3', { volume: 0.8 });
+    loadGlobal('respawn', './audio/sfx/fail.mp3', { volume: 0.3 });
 
 
     createLights();

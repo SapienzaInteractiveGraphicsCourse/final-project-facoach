@@ -5,6 +5,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 // global variables
 import {State} from '../Core/state.js';
 
+import { loadPositional } from '../Core/audio.js';
+
 //add buttons and interactive light to the scene
 export function loadButtons() {
     const loader = new GLTFLoader(State.loadingManager);
@@ -608,6 +610,13 @@ export function createMainframe(x, y, z, rotationY) {
             node.castShadow = true;
             node.receiveShadow = true;
         }
+    });
+
+    //add buzzing sound to mainframe
+    loadPositional('mainframe', './audio/sfx/mainframe_buzz.mp3', mainframe, {
+        loop: true,
+        volume: 0.2,
+        refDistance: 4
     });
 
     //add to the scene

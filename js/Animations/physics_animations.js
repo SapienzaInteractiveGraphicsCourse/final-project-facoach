@@ -6,6 +6,7 @@ import * as TWEEN from '@tweenjs/tween.js';
 import {State} from '../Core/state.js';
 
 import {getIntensityOnObject} from '../Core/utils.js';
+import { play } from '../Core/audio.js';
 
 //control if there should be collitions
 export function checkCollisions(oldPos) {
@@ -121,5 +122,17 @@ export function updateGravity() {
     if (State.player.position.y < -30) {
         State.player.position.set(0, 5, 5);
         State.velocityY = 0;
+
+        //respawn message
+        const msg = document.getElementById('respawn-message');
+        if (!msg) return;
+
+        // remove and reapply the classs to allow multiple falls and always have the message
+        msg.classList.remove('show');
+        void msg.offsetWidth;   // without this, browsseer doesn't reproduce the message multiple times
+        msg.classList.add('show');
+
+        //respawn audio
+        play('respawn');
     }
 }

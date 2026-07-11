@@ -263,6 +263,7 @@ export function setupEventListeners() {
         if (!State.musicStarted) {
             State.musicStarted = true;
             play('ambient');
+            play('mainframe');
         }
     });
 }
